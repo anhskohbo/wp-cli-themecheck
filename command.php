@@ -2,7 +2,6 @@
 /**
  * WP CLI Themecheck Command.
  *
- * @package   CMB2
  * @author    anhskohbo <anhskohbo@gmail.com>
  * @license   MIT
  * @link      https://github.com/anhskohbo/wp-cli-themecheck
