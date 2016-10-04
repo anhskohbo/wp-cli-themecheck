@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<ruleset name="WP Awethemes">
+	<description>A custom set of rules to check for a Awethemes WordPress project</description>
+
+	<config name="testVersion" value="5.5-7.0" />
+
+	<!-- Exclude patterns -->
+	<exclude-pattern>tests/*</exclude-pattern>
+
+	<!-- Run against the PHPCompatibility ruleset -->
+	<rule ref="PHPCompatibility">
+		<exclude name="PHPCompatibility.PHP.DefaultTimezoneRequired" />
+	</rule>
+
+	<!-- Run against a second ruleset -->
+	<rule ref="WordPress-Core" />
+	<rule ref="WordPress-Docs" />
+</ruleset>
