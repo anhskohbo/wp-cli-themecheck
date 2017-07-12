@@ -87,10 +87,14 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 				}
 			}
 
+			$required_count = ! empty( $this->stack_errors['REQUIRED'] ) ? count( $this->stack_errors['REQUIRED'] ) : 0;
+			$warning_count = ! empty( $this->stack_errors['WARNING'] ) ? count( $this->stack_errors['WARNING'] ) : 0;
+			$total_errors = $required_count + $warning_count;
+
 			if ( $is_success ) {
-				WP_CLI::success( sprintf( 'Congratulations! %s is passed the tests!', $theme->get( 'Name' ) ) );
+				WP_CLI::success( sprintf( 'Congratulations! %s passed the tests!', $theme->get( 'Name' ) ) );
 			} else {
-				WP_CLI::error( sprintf( 'One or more errors were found for %s!', $theme->get( 'Name' ) ), false );
+				WP_CLI::error( sprintf( '%d error(s) found for %s!', $total_errors, $theme->get( 'Name' ) ), $total_errors );
 			}
 		}
 
