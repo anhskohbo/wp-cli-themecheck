@@ -249,7 +249,7 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 				$error_msg = "Themecheck needs to be installed. Try 'wp plugin install theme-check --activate'.";
 			}
 
-			WP_CLI::error( $error_msg . "\n", false );
+			WP_CLI::error( $error_msg . "\n" );
 			$choose = cli\choose( 'Do you want run above command right now' );
 
 			if ( 'y' !== $choose ) {
