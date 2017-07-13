@@ -239,12 +239,26 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 			}
 
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			$plugin = 'theme-check/theme-check.php';
 
-			if ( array_key_exists( 'theme-check/theme-check.php', get_plugins() ) ) {
-				WP_CLI::error( "Please activate the Theme Check plugin: wp plugin activate theme-check" );
+			if ( array_key_exists( $plugin, get_plugins() ) ) {
+				$command = array( array( 'plugin', 'activate', 'theme-check' ), array() );
+				$error_msg = "Themecheck needs to be activated. Try 'wp plugin activate theme-check'.";
+			} else {
+				$command = array( array( 'plugin', 'install', 'theme-check' ), array( 'activate' => true ) );
+				$error_msg = "Themecheck needs to be installed. Try 'wp plugin install theme-check --activate'.";
 			}
 
-			WP_CLI::error( "Please install and activate the Theme Check plugin: wp plugin install theme-check --activate" );
+			WP_CLI::error( $error_msg . "\n" );
+			$choose = cli\choose( 'Do you want run above command right now' );
+
+			if ( 'y' !== $choose ) {
+				exit;
+			}
+
+			WP_CLI::line();
+			WP_CLI::run_command( $command[0], $command[1] );
+			WP_CLI::line();
 		}
 	}
 
