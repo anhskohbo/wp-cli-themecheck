@@ -35,6 +35,9 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 		 * [--skip-recommended]
 		 * : Suppress RECOMMENDED.
 		 *
+		 * [--interactive]
+		 * : Prompt user for input (default).
+		 *
 		 * ## EXAMPLES
 		 *
 		 *     $ wp themecheck --theme="twentysixteen"
@@ -43,13 +46,16 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 		 */
 		public function __invoke( $args, $assoc_args ) {
 
-			$this->before_themecheck();
+			$interactive = (bool) Utils\get_flag_value( $assoc_args, 'interactive', true );
+			$this->before_themecheck( $interactive );
 
 			require_once WP_PLUGIN_DIR . '/theme-check/checkbase.php';
 			require_once WP_PLUGIN_DIR . '/theme-check/main.php';
 
 			if ( Utils\get_flag_value( $assoc_args, 'theme' ) ) {
 				$themename = Utils\get_flag_value( $assoc_args, 'theme' );
+			} elseif ( ! $interactive ) {
+				$themename = get_stylesheet();
 			} else {
 				$themename = $this->choices_theme();
 			}
@@ -61,7 +67,7 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 			} elseif ( is_dir( $guest_path ) ) {
 				$themepath = trailingslashit( $guest_path );
 			} else {
-				WP_CLI::error( 'Unable find theme with name "' . $themename . '"' );
+				WP_CLI::error( 'Unable find theme named "' . $themename . '"' );
 			}
 
 			// Run themecheck.
@@ -87,10 +93,14 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 				}
 			}
 
+			$required_count = ! empty( $this->stack_errors['REQUIRED'] ) ? count( $this->stack_errors['REQUIRED'] ) : 0;
+			$warning_count = ! empty( $this->stack_errors['WARNING'] ) ? count( $this->stack_errors['WARNING'] ) : 0;
+			$total_errors = $required_count + $warning_count;
+
 			if ( $is_success ) {
-				WP_CLI::success( sprintf( 'Congratulations! %s is passed the tests!', $theme->get( 'Name' ) ) );
+				WP_CLI::success( sprintf( 'Congratulations! %s passed the tests!', $theme->get( 'Name' ) ) );
 			} else {
-				WP_CLI::error( sprintf( 'One or more errors were found for %s!', $theme->get( 'Name' ) ), false );
+				WP_CLI::error( sprintf( '%d error(s) found for %s!', $total_errors, $theme->get( 'Name' ) ), $total_errors );
 			}
 		}
 
@@ -178,7 +188,7 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 				$themes[ $id ] = $theme->get( 'Name' );
 			}
 
-			return cli\menu( $themes, wp_get_theme()->template, 'Choose a theme' );
+			return cli\menu( $themes, get_stylesheet(), 'Choose a theme' );
 		}
 
 		/**
@@ -227,25 +237,26 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 		}
 
 		/**
-		 * Make sure themecheck installed.
+		 * Make sure the Theme Check plugin is installed.
+		 *
+		 * @param bool $interactive Prompt user before exiting.
 		 */
-		private function before_themecheck() {
+		private function before_themecheck( $interactive ) {
 			if ( class_exists( 'ThemeCheckMain' ) ) {
 				return true;
 			}
 
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-			$plugin = 'theme-check/theme-check.php';
 
-			if ( array_key_exists( $plugin, get_plugins() ) ) {
+			if ( array_key_exists( 'theme-check/theme-check.php', get_plugins() ) ) {
 				$command = array( array( 'plugin', 'activate', 'theme-check' ), array() );
-				$error_msg = "Themecheck needs to be activated. Try 'wp plugin activate theme-check'.";
+				$error_msg = "The Theme Check plugin must be activated.\n\n\tRun: wp plugin activate theme-check\n";
 			} else {
 				$command = array( array( 'plugin', 'install', 'theme-check' ), array( 'activate' => true ) );
-				$error_msg = "Themecheck needs to be installed. Try 'wp plugin install theme-check --activate'.";
+				$error_msg = "The Theme Check plugin must be installed and activated.\n\n\tRun: wp plugin install theme-check --activate\n";
 			}
 
-			WP_CLI::error( $error_msg . "\n", false );
+			WP_CLI::error( $error_msg, ! $interactive );
 			$choose = cli\choose( 'Do you want run above command right now' );
 
 			if ( 'y' !== $choose ) {
