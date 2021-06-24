@@ -139,8 +139,33 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 			}
 
 			// Run Themecheck.
-			$data = tc_get_theme_data( $path . '/style.css' );
-			$success = run_themechecks( $datafiles['php'], $datafiles['css'], $datafiles['other'] );
+			if ( ! class_exists( 'WP_Theme' ) ) {
+				$theme = wp_get_theme( $path . '/style.css' );
+			} else {
+				$theme = new WP_Theme( basename( dirname( $path . '/style.css' ) ), dirname( dirname( $path . '/style.css' ) ) );
+			}
+
+			$data = array(
+				'Name'             => $theme->get( 'Name' ),
+				'URI'              => $theme->display( 'ThemeURI', true, false ),
+				'Description'      => $theme->display( 'Description', true, false ),
+				'Author'           => $theme->display( 'Author', true, false ),
+				'AuthorURI'        => $theme->display( 'AuthorURI', true, false ),
+				'Version'          => $theme->get( 'Version' ),
+				'Template'         => $theme->get( 'Template' ),
+				'Status'           => $theme->get( 'Status' ),
+				'Tags'             => $theme->get( 'Tags' ),
+				'Title'            => $theme->get( 'Name' ),
+				'AuthorName'       => $theme->display( 'Author', false, false ),
+				'License'          => $theme->display( 'License', false, false ),
+				'License URI'      => $theme->display( 'License URI', false, false ),
+				'Template Version' => $theme->display( 'Template Version', false, false ),
+			);
+
+			$success = run_themechecks( $datafiles['php'], $datafiles['css'], $datafiles['other'], array(
+				'theme' => $theme,
+				'slug'  => $themename,
+			) );
 
 			// Build logs report.
 			$log_pattern = '/(<span\sclass=.*>(REQUIRED|WARNING|RECOMMENDED|INFO)<\/span>\s?:)/i';
