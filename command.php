@@ -75,7 +75,7 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 			WP_CLI::line( sprintf( '| Checking %s...', $theme->get( 'Name' ) ) );
 			WP_CLI::line( "\n" );
 
-			$is_success = $this->themecheck( $themename, $themepath );
+			$is_success = $this->themecheck( $themename, $themepath, $theme );
 
 			// Display themecheck logs.
 			foreach ( $this->stack_errors as $log_level => $errors ) {
@@ -107,10 +107,11 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 		/**
 		 * Run themecheck.
 		 *
-		 * @param  string $theme Theme name.
-		 * @param  string $path  Them absolute path.
+		 * @param  string   $theme Theme name.
+		 * @param  string   $path  Them absolute path.
+		 * @param  WP_Theme $theme_object Theme object.
 		 */
-		private function themecheck( $theme, $path ) {
+		private function themecheck( $theme, $path, $theme_object ) {
 			global $themechecks, $data, $themename;
 
 			$themename = $theme;
@@ -139,31 +140,25 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 			}
 
 			// Run Themecheck.
-			if ( ! class_exists( 'WP_Theme' ) ) {
-				$theme = wp_get_theme( $path . '/style.css' );
-			} else {
-				$theme = new WP_Theme( basename( dirname( $path . '/style.css' ) ), dirname( dirname( $path . '/style.css' ) ) );
-			}
-
 			$data = array(
-				'Name'             => $theme->get( 'Name' ),
-				'URI'              => $theme->display( 'ThemeURI', true, false ),
-				'Description'      => $theme->display( 'Description', true, false ),
-				'Author'           => $theme->display( 'Author', true, false ),
-				'AuthorURI'        => $theme->display( 'AuthorURI', true, false ),
-				'Version'          => $theme->get( 'Version' ),
-				'Template'         => $theme->get( 'Template' ),
-				'Status'           => $theme->get( 'Status' ),
-				'Tags'             => $theme->get( 'Tags' ),
-				'Title'            => $theme->get( 'Name' ),
-				'AuthorName'       => $theme->display( 'Author', false, false ),
-				'License'          => $theme->display( 'License', false, false ),
-				'License URI'      => $theme->display( 'License URI', false, false ),
-				'Template Version' => $theme->display( 'Template Version', false, false ),
+				'Name'             => $theme_object->get( 'Name' ),
+				'URI'              => $theme_object->display( 'ThemeURI', true, false ),
+				'Description'      => $theme_object->display( 'Description', true, false ),
+				'Author'           => $theme_object->display( 'Author', true, false ),
+				'AuthorURI'        => $theme_object->display( 'AuthorURI', true, false ),
+				'Version'          => $theme_object->get( 'Version' ),
+				'Template'         => $theme_object->get( 'Template' ),
+				'Status'           => $theme_object->get( 'Status' ),
+				'Tags'             => $theme_object->get( 'Tags' ),
+				'Title'            => $theme_object->get( 'Name' ),
+				'AuthorName'       => $theme_object->display( 'Author', false, false ),
+				'License'          => $theme_object->display( 'License', false, false ),
+				'License URI'      => $theme_object->display( 'License URI', false, false ),
+				'Template Version' => $theme_object->display( 'Template Version', false, false ),
 			);
 
 			$success = run_themechecks( $datafiles['php'], $datafiles['css'], $datafiles['other'], array(
-				'theme' => $theme,
+				'theme' => $theme_object,
 				'slug'  => $themename,
 			) );
 
