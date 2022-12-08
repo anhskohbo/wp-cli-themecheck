@@ -163,7 +163,7 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 			) );
 
 			// Build logs report.
-			$log_pattern = '/(<span\sclass=.*>(REQUIRED|WARNING|RECOMMENDED|INFO)<\/span>\s?:)/i';
+			$log_pattern = '/(<span\sclass=.*>(REQUIRED|WARNING|RECOMMENDED|INFO)<\/span>\s?:?)/i';
 			$stack_errors = array( 'REQUIRED' => array(), 'WARNING' => array(), 'RECOMMENDED' => array(), 'INFO' => array() );
 
 			foreach ( $themechecks as $check ) {
