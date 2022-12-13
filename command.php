@@ -185,7 +185,7 @@ if ( ! class_exists( 'WP_CLI_Themecheck_Command' ) ) :
 					}
 
 					$error = $this->format_themecheck_result( $error, $log_level );
-					if ( ! in_array( $error, $stack_errors[ $log_level ] ) ) {
+					if ( isset( $stack_errors[ $log_level ] ) && ! in_array( $error, $stack_errors[ $log_level ], true ) ) {
 						$stack_errors[ $log_level ][] = $error;
 					}
 				}
